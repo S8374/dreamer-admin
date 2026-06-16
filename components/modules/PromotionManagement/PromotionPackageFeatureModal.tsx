@@ -21,6 +21,7 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
   const [updateFeature, { isLoading: isUpdating }] = useUpdatePromotionPackageFeatureMutation();
 
   const [formData, setFormData] = useState({
+    code: "",
     title: "",
     description: "",
     iconKey: "",
@@ -30,6 +31,7 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
   useEffect(() => {
     if (feature) {
       setFormData({
+        code: feature.code || "",
         title: feature.title || "",
         description: feature.description || "",
         iconKey: feature.iconKey || "",
@@ -37,6 +39,7 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
       });
     } else {
       setFormData({
+        code: "",
         title: "",
         description: "",
         iconKey: "",
@@ -44,6 +47,19 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
       });
     }
   }, [feature, isOpen, nextSortOrder]);
+
+  // Auto-generate code from title if creating a new feature and code is empty
+  useEffect(() => {
+    if (!feature && formData.title && !formData.code) {
+      const generatedCode = formData.title
+        .toUpperCase()
+        .replace(/[^A-Z0-9\s]/g, "")
+        .trim()
+        .replace(/\s+/g, "_")
+        .substring(0, 50);
+      setFormData((prev) => ({ ...prev, code: generatedCode }));
+    }
+  }, [formData.title, feature]);
 
   if (!isOpen) return null;
 
@@ -87,6 +103,30 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
 
         <div className="p-6 overflow-y-auto flex-1">
           <form id="feature-form" onSubmit={handleSubmit} className="space-y-4">
+              <div className="col-span-1 md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Feature Code (Optional)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, "") })}
+                    className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
+                    placeholder="e.g. FEATURED_LISTING"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                       const baseText = formData.title || "FEATURE_" + Math.random().toString(36).substring(2, 8);
+                       const generated = baseText.toUpperCase().replace(/[^A-Z0-9\s_]/g, "").trim().replace(/\s+/g, "_").substring(0, 50);
+                       setFormData((prev) => ({ ...prev, code: generated }));
+                    }}
+                    className="px-3 py-2 text-xs font-medium text-[#6b8f84] bg-[#6b8f84]/10 rounded-xl hover:bg-[#6b8f84]/20 whitespace-nowrap"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </div>
+
               <div className="col-span-1 md:col-span-2">
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Title</label>
                 <input

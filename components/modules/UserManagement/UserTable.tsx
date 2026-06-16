@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, MoreVertical, ShieldAlert, ShieldCheck, UserX, Trash2, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MoreVertical, ShieldAlert, ShieldCheck, UserX, Trash2, CheckCircle2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { 
   useGetUsersQuery, 
   useUpdateUserStatusMutation, 
@@ -10,6 +10,7 @@ import {
 } from "@/lib/redux/api/userApi";
 import { toast } from "sonner";
 import Image from "next/image";
+import Link from "next/link";
 
 export function UserTable() {
   const [page, setPage] = useState(1);
@@ -185,12 +186,21 @@ export function UserTable() {
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className={`px-6 py-4 text-right relative ${activeMenu === user.id ? 'z-50' : 'z-10'}`}>
-                    <button 
-                      onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
-                      className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-zinc-500"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link 
+                        href={`/details-user/${user.id}`} 
+                        className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                      >
+                        <Eye className="h-3.5 w-3.5" /> Details
+                      </Link>
+                      
+                      <button 
+                        onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
+                        className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-zinc-500"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </div>
 
                     {/* Action Dropdown Menu */}
                     {activeMenu === user.id && (

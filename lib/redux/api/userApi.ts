@@ -62,6 +62,42 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["Users"],
     }),
+    getUserListings: builder.query<any, { id: string; page?: number; limit?: number }>({
+      query: ({ id, page = 1, limit = 10 }) => ({
+        url: `/admin/users/${id}/listings?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, { id }) => [{ type: "Users", id: `Listings-${id}` }],
+    }),
+    getUserReviews: builder.query<any, { id: string; type: "received" | "given"; page?: number; limit?: number }>({
+      query: ({ id, type, page = 1, limit = 10 }) => ({
+        url: `/admin/users/${id}/reviews?type=${type}&page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, { id, type }) => [{ type: "Users", id: `Reviews-${type}-${id}` }],
+    }),
+    adminDeleteListing: builder.mutation<any, { listingId: string; userId: string }>({
+      query: ({ listingId }) => ({
+        url: `/admin/users/listings/${listingId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { userId }) => [{ type: "Users", id: `Listings-${userId}` }],
+    }),
+    adminUpdateReview: builder.mutation<any, { reviewId: string; userId: string; type: string; rating: number; comment: string }>({
+      query: ({ reviewId, rating, comment }) => ({
+        url: `/admin/users/reviews/${reviewId}`,
+        method: "PUT",
+        body: { rating, comment }
+      }),
+      invalidatesTags: (result, error, { userId, type }) => [{ type: "Users", id: `Reviews-${type}-${userId}` }, { type: "Users", id: userId }],
+    }),
+    adminDeleteReview: builder.mutation<any, { reviewId: string; userId: string; type: string }>({
+      query: ({ reviewId }) => ({
+        url: `/admin/users/reviews/${reviewId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { userId, type }) => [{ type: "Users", id: `Reviews-${type}-${userId}` }, { type: "Users", id: userId }],
+    }),
   }),
 });
 
@@ -72,4 +108,9 @@ export const {
   useUpdateUserStatusMutation,
   useUpdateUserRoleMutation,
   useDeleteUserMutation,
+  useGetUserListingsQuery,
+  useGetUserReviewsQuery,
+  useAdminDeleteListingMutation,
+  useAdminUpdateReviewMutation,
+  useAdminDeleteReviewMutation,
 } = userApi;
