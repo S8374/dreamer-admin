@@ -13,7 +13,8 @@ import {
   Settings,
   X,
   FileText,
-  Gift
+  Gift,
+  Trophy
 } from "lucide-react";
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ interface SidebarProps {
 const navItems = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "User Management", href: "/user-management", icon: Users },
+  { name: "Top Users", href: "/top-users", icon: Trophy },
   { name: "Listing Management", href: "/listings-management", icon: List },
   { name: "Membership Management", href: "/memberships-management", icon: CreditCard },
   { name: "Promotion Management", href: "/promotion-management", icon: Gift },

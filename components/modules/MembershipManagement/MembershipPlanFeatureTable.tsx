@@ -80,6 +80,7 @@ export function MembershipPlanFeatureTable({ membershipPlanId }: { membershipPla
           <thead className="bg-zinc-50 dark:bg-zinc-900/80 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
             <tr>
               <th className="px-6 py-4 font-medium">Feature Details</th>
+              <th className="px-6 py-4 font-medium">Feature Code</th>
               <th className="px-6 py-4 font-medium">Limit</th>
               <th className="px-6 py-4 font-medium text-center">Sort Order</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -88,7 +89,7 @@ export function MembershipPlanFeatureTable({ membershipPlanId }: { membershipPla
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
             {isLoading || isFetching ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">
+                <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
                   <div className="animate-pulse flex flex-col items-center gap-2">
                     <div className="h-6 w-6 border-2 border-[#6b8f84] border-t-transparent rounded-full animate-spin" />
                     Loading features...
@@ -97,7 +98,7 @@ export function MembershipPlanFeatureTable({ membershipPlanId }: { membershipPla
               </tr>
             ) : filteredFeatures.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">
+                <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
                   No features found for this membership plan.
                 </td>
               </tr>
@@ -108,6 +109,15 @@ export function MembershipPlanFeatureTable({ membershipPlanId }: { membershipPla
                     <div className="font-medium text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap max-w-md">
                       {feature.details}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-left">
+                    {feature.code ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
+                        {feature.code}
+                      </span>
+                    ) : (
+                      <span className="text-zinc-400">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">
                     {feature.isUnlimited ? "Unlimited" : feature.limitValue !== null ? `Limit: ${feature.limitValue}` : "No limit specified"}

@@ -19,6 +19,8 @@ interface PromotionPackageFeatureModalProps {
 export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promotionPackageId, nextSortOrder }: PromotionPackageFeatureModalProps) {
   const [createFeature, { isLoading: isCreating }] = useCreatePromotionPackageFeatureMutation();
   const [updateFeature, { isLoading: isUpdating }] = useUpdatePromotionPackageFeatureMutation();
+  const [isUploading, setIsUploading] = useState(false);
+  const [iconFile, setIconFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     code: "",
@@ -46,6 +48,7 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
         sortOrder: nextSortOrder,
       });
     }
+    setIconFile(null);
   }, [feature, isOpen, nextSortOrder]);
 
   // Auto-generate code from title if creating a new feature and code is empty
@@ -66,26 +69,35 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = { ...formData };
-      if (!payload.iconKey) delete (payload as any).iconKey;
+      const payloadData = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== "" && value !== null && value !== undefined) {
+          payloadData.append(key, value.toString());
+        }
+      });
+      
+      if (iconFile) {
+        payloadData.append("icon", iconFile);
+      }
 
       if (feature) {
         await updateFeature({
           packageId: promotionPackageId,
           featureId: feature.id,
-          body: payload,
+          body: payloadData,
         }).unwrap();
         toast.success("Feature updated successfully");
       } else {
         await createFeature({
           packageId: promotionPackageId,
-          body: payload,
+          body: payloadData,
         }).unwrap();
         toast.success("Feature created successfully");
       }
       onClose();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to save feature");
+      setIsUploading(false);
+      toast.error(error?.message || error?.data?.message || "Failed to save feature");
     }
   };
 
@@ -151,14 +163,22 @@ export function PromotionPackageFeatureModal({ isOpen, onClose, feature, promoti
               </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Icon Key (Optional)</label>
-              <input
-                type="text"
-                value={formData.iconKey}
-                onChange={(e) => setFormData({ ...formData, iconKey: e.target.value })}
-                className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
-                placeholder="e.g. star"
-              />
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Icon Upload (Optional)</label>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="file"
+                  accept="image/*,.svg"
+                  onChange={(e) => setIconFile(e.target.files?.[0] || null)}
+                  className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84] text-sm"
+                />
+                {iconFile ? (
+                  <p className="text-xs text-[#6b8f84]">Selected: {iconFile.name}</p>
+                ) : formData.iconKey ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-500">Current: {formData.iconKey.substring(0, 30)}...</span>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div>

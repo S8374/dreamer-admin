@@ -4,7 +4,7 @@ import { baseQuery } from "./baseApi";
 export const membershipPlanApi = createApi({
   reducerPath: "membershipPlanApi",
   baseQuery,
-  tagTypes: ["MembershipPlans", "MembershipPlanFeatures"],
+  tagTypes: ["MembershipPlans", "MembershipPlanFeatures", "Users"],
   endpoints: (builder) => ({
     getMembershipPlans: builder.query<
       any,
@@ -95,6 +95,17 @@ export const membershipPlanApi = createApi({
       }),
       invalidatesTags: ["MembershipPlanFeatures"],
     }),
+    grantMembershipPlanAccess: builder.mutation<
+      any,
+      { membershipPlanId: string; userId: string; durationDays?: number; isYearly?: boolean }
+    >({
+      query: ({ membershipPlanId, ...body }) => ({
+        url: `/admin/membership-plans/${membershipPlanId}/grant-access`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["MembershipPlans", { type: "Users" as const, id: "LIST" }],
+    }),
   }),
 });
 
@@ -108,4 +119,5 @@ export const {
   useCreateMembershipPlanFeatureMutation,
   useUpdateMembershipPlanFeatureMutation,
   useDeleteMembershipPlanFeatureMutation,
+  useGrantMembershipPlanAccessMutation,
 } = membershipPlanApi;

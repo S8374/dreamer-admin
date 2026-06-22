@@ -8,7 +8,7 @@ export const userApi = createApi({
   endpoints: (builder) => ({
     getUsers: builder.query<
       any,
-      { page: number; limit: number; search?: string; role?: string; status?: string }
+      { page: number; limit: number; search?: string; role?: string; status?: string; sortBy?: string }
     >({
       query: (params) => {
         const queryParams = new URLSearchParams();
@@ -17,6 +17,7 @@ export const userApi = createApi({
         if (params.search) queryParams.append("search", params.search);
         if (params.role && params.role !== "all") queryParams.append("role", params.role);
         if (params.status && params.status !== "all") queryParams.append("status", params.status);
+        if (params.sortBy) queryParams.append("sortBy", params.sortBy);
 
         return {
           url: `/admin/users?${queryParams.toString()}`,

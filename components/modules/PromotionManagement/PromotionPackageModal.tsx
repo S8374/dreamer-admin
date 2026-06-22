@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import { useCreatePromotionPackageMutation, useUpdatePromotionPackageMutation } from "@/lib/redux/api/promotionPackageApi";
+import { useCreatePromotionPackageMutation, useUpdatePromotionPackageMutation, useGetPromotionPackagesQuery } from "@/lib/redux/api/promotionPackageApi";
 
 interface PromotionPackageModalProps {
   isOpen: boolean;
@@ -14,6 +14,7 @@ interface PromotionPackageModalProps {
 export function PromotionPackageModal({ isOpen, onClose, packageItem }: PromotionPackageModalProps) {
   const [createPackage, { isLoading: isCreating }] = useCreatePromotionPackageMutation();
   const [updatePackage, { isLoading: isUpdating }] = useUpdatePromotionPackageMutation();
+  const { data: packagesRes } = useGetPromotionPackagesQuery({ includeInactive: true }, { skip: !isOpen });
 
   const [formData, setFormData] = useState({
     code: "",
@@ -40,23 +41,23 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
         description: packageItem.description || "",
         sortOrder: packageItem.sortOrder || 0,
         isActive: packageItem.isActive !== undefined ? packageItem.isActive : true,
-        revenueCatProductId: packageItem.revenueCatProductId || "",
       });
     } else {
+      const packagesList = packagesRes?.data || packagesRes || [];
+      const currentCount = Array.isArray(packagesList) ? packagesList.length : packagesList.data?.length || 0;
       setFormData({
-        code: "",
+        code: `PROMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         name: "",
         durationDays: 1,
         price: 0,
         currency: "USD",
         billingType: "month",
         description: "",
-        sortOrder: 0,
+        sortOrder: currentCount + 1,
         isActive: true,
-        revenueCatProductId: "",
       });
     }
-  }, [packageItem, isOpen]);
+  }, [packageItem, isOpen, packagesRes]);
 
   if (!isOpen) return null;
 
@@ -93,14 +94,22 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Code</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
-                  placeholder="e.g. promo-1"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, code: `PROMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}` })}
+                    className="px-3 py-2 text-sm font-medium text-[#6b8f84] bg-[#6b8f84]/10 rounded-xl hover:bg-[#6b8f84]/20 transition-colors whitespace-nowrap"
+                  >
+                    Generate
+                  </button>
+                </div>
               </div>
               
               <div className="col-span-1 md:col-span-2">
@@ -121,9 +130,10 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
                   type="number"
                   min="1"
                   required
-                  value={formData.durationDays}
+                  disabled={formData.billingType === "month"}
+                  value={formData.billingType === "month" ? 30 : formData.durationDays}
                   onChange={(e) => setFormData({ ...formData, durationDays: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
+                  className={`w-full px-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84] ${formData.billingType === "month" ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-zinc-50 dark:bg-zinc-950'}`}
                 />
               </div>
               <div>
@@ -145,8 +155,8 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
                   type="text"
                   maxLength={3}
                   value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value.toUpperCase() })}
-                  className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
+                  readOnly
+                  className="w-full px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none cursor-not-allowed"
                 />
               </div>
               <div>
@@ -167,16 +177,7 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
                   type="number"
                   min="0"
                   value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">RevenueCat Product ID</label>
-                <input
-                  type="text"
-                  value={formData.revenueCatProductId}
-                  onChange={(e) => setFormData({ ...formData, revenueCatProductId: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
                   className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
                 />
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, MoreVertical, ShieldAlert, ShieldCheck, UserX, Trash2, CheckCircle2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Search, MoreVertical, ShieldAlert, ShieldCheck, UserX, Trash2, CheckCircle2, ChevronLeft, ChevronRight, Eye, Gift } from "lucide-react";
 import { 
   useGetUsersQuery, 
   useUpdateUserStatusMutation, 
@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
+import { AssignMembershipModal } from "./AssignMembershipModal";
 
 export function UserTable() {
   const [page, setPage] = useState(1);
@@ -20,6 +21,7 @@ export function UserTable() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [assignMembershipUser, setAssignMembershipUser] = useState<any | null>(null);
 
   const { data, isLoading, isFetching, refetch } = useGetUsersQuery({
     page,
@@ -226,6 +228,18 @@ export function UserTable() {
                               <ShieldCheck className="h-4 w-4" /> Remove Admin
                             </button>
                           )}
+
+                          <div className="h-px bg-zinc-200 my-1" />
+                          
+                          <button 
+                            onClick={() => {
+                              setActiveMenu(null);
+                              setAssignMembershipUser(user);
+                            }} 
+                            className="w-full text-left px-4 py-2 text-sm text-[#6b8f84] hover:bg-[#6b8f84]/10 flex items-center gap-2 font-medium"
+                          >
+                            <Gift className="h-4 w-4" /> Assign Membership
+                          </button>
                           
                           <div className="h-px bg-zinc-200 my-1" />
                           
@@ -265,6 +279,13 @@ export function UserTable() {
           </button>
         </div>
       </div>
+
+      {assignMembershipUser && (
+        <AssignMembershipModal 
+          user={assignMembershipUser} 
+          onClose={() => setAssignMembershipUser(null)} 
+        />
+      )}
     </div>
   );
 }
