@@ -6,6 +6,11 @@ import { documentApi } from "./api/documentApi";
 import { membershipPlanApi } from "./api/membershipPlanApi";
 import { promotionPackageApi } from "./api/promotionPackageApi";
 import { translationApi } from "./api/translationApi";
+import { reportApi } from "./api/reportApi";
+import { supportApi } from "./api/supportApi";
+import { listingApi } from "./api/listingApi";
+import { notificationApi } from "./api/notificationApi";
+import { paymentApi } from "./api/paymentApi";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +21,11 @@ export const store = configureStore({
     [membershipPlanApi.reducerPath]: membershipPlanApi.reducer,
     [promotionPackageApi.reducerPath]: promotionPackageApi.reducer,
     [translationApi.reducerPath]: translationApi.reducer,
+    [reportApi.reducerPath]: reportApi.reducer,
+    [supportApi.reducerPath]: supportApi.reducer,
+    [listingApi.reducerPath]: listingApi.reducer,
+    [notificationApi.reducerPath]: notificationApi.reducer,
+    [paymentApi.reducerPath]: paymentApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -25,7 +35,12 @@ export const store = configureStore({
       documentApi.middleware,
       membershipPlanApi.middleware,
       promotionPackageApi.middleware,
-      translationApi.middleware
+      translationApi.middleware,
+      reportApi.middleware,
+      supportApi.middleware,
+      listingApi.middleware,
+      notificationApi.middleware,
+      paymentApi.middleware
     ),
 });
 

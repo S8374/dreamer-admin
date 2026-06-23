@@ -41,6 +41,7 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
         description: packageItem.description || "",
         sortOrder: packageItem.sortOrder || 0,
         isActive: packageItem.isActive !== undefined ? packageItem.isActive : true,
+        revenueCatProductId: packageItem.revenueCatProductId || "",
       });
     } else {
       const packagesList = packagesRes?.data || packagesRes || [];
@@ -55,6 +56,7 @@ export function PromotionPackageModal({ isOpen, onClose, packageItem }: Promotio
         description: "",
         sortOrder: currentCount + 1,
         isActive: true,
+        revenueCatProductId: "",
       });
     }
   }, [packageItem, isOpen, packagesRes]);

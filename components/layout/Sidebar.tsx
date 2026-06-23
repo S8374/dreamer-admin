@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,7 +15,8 @@ import {
   X,
   FileText,
   Gift,
-  Trophy
+  Trophy,
+  DollarSign
 } from "lucide-react";
 
 interface SidebarProps {
@@ -22,21 +24,54 @@ interface SidebarProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const navItems = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "User Management", href: "/user-management", icon: Users },
-  { name: "Top Users", href: "/top-users", icon: Trophy },
-  { name: "Listing Management", href: "/listings-management", icon: List },
-  { name: "Membership Management", href: "/memberships-management", icon: CreditCard },
-  { name: "Promotion Management", href: "/promotion-management", icon: Gift },
-  { name: "Service Management", href: "/services-management", icon: Briefcase },
-  { name: "Document Management", href: "/documents-management", icon: FileText },
-  { name: "Support Management", href: "/support-management", icon: MessageSquare },
-  { name: "Report Management", href: "/reports-management", icon: BarChart3 },
+const navSections = [
+  {
+    title: "Main",
+    items: [
+      { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+    ]
+  },
+  {
+    title: "Users",
+    items: [
+      { name: "User Management", href: "/user-management", icon: Users },
+      { name: "Top Users", href: "/top-users", icon: Trophy },
+    ]
+  },
+  {
+    title: "Marketplace",
+    items: [
+      { name: "Listing Management", href: "/listings-management", icon: List },
+      { name: "Service Management", href: "/services-management", icon: Briefcase },
+    ]
+  },
+  {
+    title: "Billing & Revenue",
+    items: [
+      { name: "Membership Management", href: "/memberships-management", icon: CreditCard },
+      { name: "Promotion Management", href: "/promotion-management", icon: Gift },
+      { name: "Payment History", href: "/payment-history", icon: DollarSign },
+    ]
+  },
+  {
+    title: "Support & Moderation",
+    items: [
+      { name: "Document Management", href: "/documents-management", icon: FileText },
+      { name: "Support Management", href: "/support-management", icon: MessageSquare },
+      { name: "Report Management", href: "/reports-management", icon: BarChart3 },
+    ]
+  }
 ];
 
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    // Automatically close sidebar when navigating on mobile/tablet (< 1024px)
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
+  }, [pathname, setIsOpen]);
 
   return (
     <>
@@ -51,7 +86,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white text-zinc-600 transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 border-r border-zinc-200 overflow-hidden ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Background Image */}
@@ -77,32 +112,41 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="relative z-10 flex-1 overflow-y-auto px-4 py-6 space-y-1 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-[14.5px] font-medium transition-all ${
-                  isActive
-                    ? "bg-[#6b8f84]/10 text-[#6b8f84]"
-                    : "text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900"
-                }`}
-              >
-                <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                  isActive ? "bg-[#6b8f84]/20 text-[#6b8f84]" : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200 group-hover:text-zinc-900"
-                }`}>
-                  <item.icon className="h-5 w-5" />
-                  {/* Active Indicator Line */}
-                  {isActive && (
-                    <div className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#6b8f84]" />
-                  )}
-                </div>
-                {item.name}
-              </Link>
-            );
-          })}
+        <nav className="relative z-10 flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
+          {navSections.map((section) => (
+            <div key={section.title} className="space-y-1">
+              <h3 className="px-3 text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                {section.title}
+              </h3>
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`group flex items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-medium transition-all ${
+                        isActive
+                          ? "bg-[#6b8f84]/10 text-[#6b8f84]"
+                          : "text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900"
+                      }`}
+                    >
+                      <div className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        isActive ? "bg-[#6b8f84]/20 text-[#6b8f84]" : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200 group-hover:text-zinc-900"
+                      }`}>
+                        <item.icon className="h-4.5 w-4.5" />
+                        {/* Active Indicator Line */}
+                        {isActive && (
+                          <div className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-[#6b8f84]" />
+                        )}
+                      </div>
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Footer / Settings */}

@@ -99,6 +99,14 @@ export const userApi = createApi({
       }),
       invalidatesTags: (result, error, { userId, type }) => [{ type: "Users", id: `Reviews-${type}-${userId}` }, { type: "Users", id: userId }],
     }),
+    adminSendMessage: builder.mutation<any, { conversationId: string; content: string }>({
+      query: ({ conversationId, content }) => ({
+        url: `/admin/users/conversations/${conversationId}/messages`,
+        method: "POST",
+        body: { content },
+      }),
+      invalidatesTags: ["Users"],
+    }),
   }),
 });
 
@@ -114,4 +122,5 @@ export const {
   useAdminDeleteListingMutation,
   useAdminUpdateReviewMutation,
   useAdminDeleteReviewMutation,
+  useAdminSendMessageMutation,
 } = userApi;

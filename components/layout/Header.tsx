@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 
 import { useAdminLogoutMutation } from "@/lib/redux/api/authApi";
+import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from "@/lib/redux/api/notificationApi";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -14,7 +15,28 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const router = useRouter();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [adminLogout] = useAdminLogoutMutation();
+
+  const { data: notificationsRes } = useGetNotificationsQuery();
+  const [markAsRead] = useMarkNotificationAsReadMutation();
+
+  const notifications = notificationsRes?.data ?? [];
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+
+  const handleNotificationClick = async (notification: any) => {
+    try {
+      if (!notification.isRead) {
+        await markAsRead(notification.id).unwrap();
+      }
+      setShowNotifications(false);
+      if (notification.actionUrl) {
+        router.push(notification.actionUrl);
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -40,13 +62,50 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex flex-1 justify-end items-center gap-4 sm:gap-6">
         
         {/* Notifications */}
-        <button className="relative p-2 text-zinc-400 hover:text-zinc-600 transition-colors dark:hover:text-zinc-300">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-          </span>
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 text-zinc-400 hover:text-zinc-650 transition-colors dark:hover:text-zinc-300"
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-450 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-800 dark:bg-zinc-900 z-50">
+              <div className="flex items-center justify-between border-b border-zinc-150 dark:border-zinc-800 pb-2 px-3 mb-2">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-150">Notifications</span>
+                {unreadCount > 0 && <span className="text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-500/10 px-2 py-0.5 rounded-full">{unreadCount} unread</span>}
+              </div>
+              <div className="max-h-72 overflow-y-auto space-y-1 scrollbar-thin">
+                {notifications.length === 0 ? (
+                  <p className="text-center text-zinc-400 text-xs py-6">No notifications found.</p>
+                ) : (
+                  notifications.map((n: any) => (
+                    <button
+                      key={n.id}
+                      onClick={() => handleNotificationClick(n)}
+                      className={`w-full text-left p-2.5 rounded-xl transition-all flex flex-col gap-0.5 border border-transparent ${
+                        !n.isRead 
+                          ? "bg-[#6b8f84]/5 dark:bg-[#6b8f84]/10 border-l-2 border-l-[#6b8f84] text-zinc-900 dark:text-zinc-100" 
+                          : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-650 dark:text-zinc-400"
+                      }`}
+                    >
+                      <span className="text-xs font-bold leading-tight block">{n.title}</span>
+                      <span className="text-[10px] leading-relaxed block truncate max-w-full text-zinc-500 dark:text-zinc-400">{n.body}</span>
+                      <span className="text-[9px] text-zinc-400 dark:text-zinc-500 block mt-0.5">{new Date(n.createdAt).toLocaleDateString()}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Profile Dropdown */}
         <div className="relative">
