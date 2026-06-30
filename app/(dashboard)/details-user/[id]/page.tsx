@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
@@ -28,6 +28,8 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
   const { id } = resolvedParams;
 
   const { data, isLoading, refetch } = useGetUserByIdQuery(id);
+  const user = data?.data;
+
   const [activeTab, setActiveTab] = useState<
     "listings" | "offers" | "received_reviews" | "given_reviews" | "chats" | "subscriptions"
   >("listings");
@@ -36,6 +38,95 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
   const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
   const [messageText, setMessageText] = useState("");
   const [adminSendMessage, { isLoading: isSending }] = useAdminSendMessageMutation();
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [peerTypingUser, setPeerTypingUser] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Combine host and guest conversations, then sort by updatedAt desc
+  const allConversations = user
+    ? [
+        ...(user.conversationsHost || []),
+        ...(user.conversationsGuest || [])
+      ].sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    : [];
+
+  // Find active conversation to ensure it has updated messages
+  const activeConversation = selectedConversation 
+    ? allConversations.find((c: any) => c.id === selectedConversation.id) || selectedConversation
+    : null;
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [activeConversation?.messages?.length, peerTypingUser]);
+
+  useEffect(() => {
+    if (activeTab !== "chats") return;
+
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let isUnmounted = false;
+
+    const connect = () => {
+      if (isUnmounted) return;
+      const wsUrl = `ws://localhost:3030/messages/ws?userId=${id}`;
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log("Admin WebSocket Connected");
+        if (selectedConversation?.id) {
+          ws?.send(JSON.stringify({ event: "conversation:join", data: { conversationId: selectedConversation.id } }));
+        }
+      };
+
+      ws.onmessage = (msg) => {
+        try {
+          const payload = JSON.parse(msg.data);
+          const { event, data } = payload;
+
+          if (event === "presence:update" && data?.onlineUsers) {
+            setOnlineUsers(data.onlineUsers);
+          }
+
+          if (event === "typing:start") {
+            if (data.conversationId === selectedConversation?.id) {
+              setPeerTypingUser(data.userId);
+            }
+          }
+
+          if (event === "typing:stop") {
+            if (data.conversationId === selectedConversation?.id) {
+              setPeerTypingUser(null);
+            }
+          }
+
+          if (["message:new", "message:sent", "message:read", "message:updated", "message:deleted"].includes(event)) {
+            refetch();
+          }
+        } catch (err) {
+          console.error("Failed to parse websocket message", err);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log("Admin WebSocket Disconnected");
+        if (!isUnmounted) {
+          reconnectTimeout = setTimeout(() => {
+            connect();
+          }, 3000);
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      isUnmounted = true;
+      if (ws) ws.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
+  }, [activeTab, selectedConversation?.id, refetch]);
 
   if (isLoading) {
     return (
@@ -45,8 +136,6 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const user = data?.data;
-
   if (!user) {
     return (
       <div className="text-center py-20 text-zinc-500">
@@ -54,17 +143,6 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-
-  // Combine host and guest conversations, then sort by updatedAt desc
-  const allConversations = [
-    ...(user.conversationsHost || []),
-    ...(user.conversationsGuest || [])
-  ].sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-
-  // Find active conversation to ensure it has updated messages
-  const activeConversation = selectedConversation 
-    ? allConversations.find((c: any) => c.id === selectedConversation.id) || selectedConversation
-    : null;
 
   // Combine requested (sent) and provided (received) offer requests
   const sentOffers = user.requestedOrders || [];
@@ -244,7 +322,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 min-h-[400px]">
               
               {/* Conversations List (Col 4) */}
-              <div className="md:col-span-4 border-r border-zinc-200 dark:border-zinc-800 pr-4 space-y-2 max-h-[450px] overflow-y-auto">
+              <div className="md:col-span-4 min-w-0 border-r border-zinc-200 dark:border-zinc-800 pr-4 space-y-2 max-h-[450px] overflow-y-auto">
                 <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-2">Conversations</span>
                 {allConversations.length === 0 ? (
                   <p className="text-xs text-zinc-500 py-4">No chat logs found for this user.</p>
@@ -253,6 +331,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                     const isUserHost = chat.hostId === id;
                     const peer = isUserHost ? chat.guest : chat.host;
                     const isSelected = selectedConversation?.id === chat.id;
+                    const isPeerOnline = onlineUsers.includes(peer?.id);
 
                     return (
                       <button
@@ -264,17 +343,22 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                             : "bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-250/60 dark:border-zinc-800"
                         }`}
                       >
-                        {peer?.avatarUrl ? (
-                          <img
-                            src={peer.avatarUrl}
-                            alt=""
-                            className="w-8 h-8 rounded-full object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 shrink-0 text-xs">
-                            <User className="h-4 w-4" />
-                          </div>
-                        )}
+                        <div className="relative shrink-0">
+                          {peer?.avatarUrl ? (
+                            <img
+                              src={peer.avatarUrl}
+                              alt=""
+                              className="w-8 h-8 rounded-full object-cover shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 shrink-0 text-xs">
+                              <User className="h-4 w-4" />
+                            </div>
+                          )}
+                          {isPeerOnline && (
+                            <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+                          )}
+                        </div>
                         <div className="truncate flex-1 min-w-0">
                           <div className="font-semibold text-xs leading-none mb-0.5 truncate">{peer?.fullName || "Unnamed User"}</div>
                           <span className="text-[10px] text-zinc-400 truncate block">
@@ -289,25 +373,42 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {/* Chat Viewport (Col 8) */}
-              <div className="md:col-span-8 flex flex-col max-h-[450px]">
+              <div className="md:col-span-8 min-w-0 flex flex-col max-h-[450px] overflow-hidden">
                 {activeConversation ? (
-                  <div className="flex flex-col h-full flex-1 min-h-[350px]">
+                  <div className="flex flex-col h-full flex-1 min-h-[350px] overflow-hidden">
                     <div className="border-b border-zinc-200 dark:border-zinc-855 pb-3 mb-4 flex items-center gap-3">
                       {((activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.avatarUrl) ? (
-                        <img
-                          src={(activeConversation.hostId === id ? activeConversation.guest : activeConversation.host).avatarUrl}
-                          alt=""
-                          className="w-9 h-9 rounded-full object-cover border border-zinc-200/50"
-                        />
+                        <div className="relative">
+                          <img
+                            src={(activeConversation.hostId === id ? activeConversation.guest : activeConversation.host).avatarUrl}
+                            alt=""
+                            className="w-9 h-9 rounded-full object-cover border border-zinc-200/50"
+                          />
+                          {onlineUsers.includes((activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.id) && (
+                            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+                          )}
+                        </div>
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-850 flex items-center justify-center text-zinc-500 border border-zinc-200/50 text-sm">
-                          <User className="h-4 w-4" />
+                        <div className="relative">
+                          <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-850 flex items-center justify-center text-zinc-500 border border-zinc-200/50 text-sm">
+                            <User className="h-4 w-4" />
+                          </div>
+                          {onlineUsers.includes((activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.id) && (
+                            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+                          )}
                         </div>
                       )}
                       <div>
-                        <span className="text-sm font-bold block leading-none text-zinc-900 dark:text-zinc-100">
-                          Chat with {(activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.fullName}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold block leading-none text-zinc-900 dark:text-zinc-100">
+                            Chat with {(activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.fullName}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${
+                            onlineUsers.includes((activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.id) ? "text-emerald-500" : "text-zinc-400"
+                          }`}>
+                            {onlineUsers.includes((activeConversation.hostId === id ? activeConversation.guest : activeConversation.host)?.id) ? "Active" : "Offline"}
+                          </span>
+                        </div>
                         <span className="text-[10px] text-zinc-400">
                           ID: {activeConversation.id}
                         </span>
@@ -315,7 +416,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                     </div>
  
                     {/* Chat Logs view */}
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin mb-4">
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 pr-2 scrollbar-thin mb-4">
                       {activeConversation.messages && activeConversation.messages.map((message: any) => {
                         const isMainUser = message.senderId === id;
                         const senderName = isMainUser 
@@ -334,7 +435,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                             <span className="text-[10px] text-zinc-400 font-semibold px-1">
                               {senderName} • {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
-                            <div className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                            <div className={`p-3 rounded-2xl text-xs leading-relaxed break-words whitespace-pre-wrap ${
                               isMainUser 
                                 ? "bg-zinc-100 text-zinc-855 rounded-tl-none dark:bg-zinc-800 dark:text-zinc-150" 
                                 : "bg-[#6b8f84]/15 text-zinc-900 rounded-tr-none dark:bg-[#6b8f84]/35 dark:text-zinc-50"
@@ -344,6 +445,23 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                           </div>
                         );
                       })}
+                      
+                      {peerTypingUser && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-[#6b8f84] font-semibold italic animate-pulse py-1">
+                          <span className="flex gap-1 items-center justify-center">
+                            {peerTypingUser === id 
+                              ? user.fullName 
+                              : (activeConversation.hostId === id 
+                                  ? activeConversation.guest?.fullName 
+                                  : activeConversation.host?.fullName)} is typing
+                            <span className="flex gap-0.5 items-center justify-center h-3 ml-0.5">
+                              <span className="w-1 h-1 rounded-full bg-[#6b8f84] animate-bounce" style={{ animationDelay: "0ms" }} />
+                              <span className="w-1 h-1 rounded-full bg-[#6b8f84] animate-bounce" style={{ animationDelay: "150ms" }} />
+                              <span className="w-1 h-1 rounded-full bg-[#6b8f84] animate-bounce" style={{ animationDelay: "300ms" }} />
+                            </span>
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Admin Message Send Input Form */}
