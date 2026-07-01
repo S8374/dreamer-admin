@@ -1,0 +1,21 @@
+{
+  "header": {
+    "notifications": "Notificaciones",
+    "no_notifications": "No se encontraron notificaciones.",
+    "unread": "no leído",
+    "sign_out": "Cerrar sesión"
+  },
+  "sidebar": {
+    "dashboard": "Tablero",
+    "users": "Usuarios",
+    "user_management": "Gestión de Usuarios",
+    "top_users": "Mejores Usuarios",
+    "marketplace": "Mercado",
+    "listing_management": "Gestión de Anuncios",
+    "service_management": "Gestión de Servicios",
+    "billing": "Facturación e Ingresos",
+    "membership_management": "Gestión de Membresías",
+    "promotion_management": "Gestión de Promociones",
+    "settings": "Ajustes"
+  }
+}

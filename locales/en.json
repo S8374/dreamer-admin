@@ -1,0 +1,21 @@
+{
+  "header": {
+    "notifications": "Notifications",
+    "no_notifications": "No notifications found.",
+    "unread": "unread",
+    "sign_out": "Sign out"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "user_management": "User Management",
+    "top_users": "Top Users",
+    "marketplace": "Marketplace",
+    "listing_management": "Listing Management",
+    "service_management": "Service Management",
+    "billing": "Billing & Revenue",
+    "membership_management": "Membership Management",
+    "promotion_management": "Promotion Management",
+    "settings": "Settings"
+  }
+}

@@ -116,17 +116,17 @@ export function UserTable() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-x-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap">
+      {/* Desktop Table */}
+      <div className="hidden md:block flex-1 overflow-x-auto">
+        <table className="w-full text-left text-sm">
           <thead className="bg-zinc-50 dark:bg-zinc-900/80 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
             <tr>
-              <th className="px-6 py-4 font-medium">User</th>
-              <th className="px-6 py-4 font-medium">Contact</th>
-              <th className="px-6 py-4 font-medium">Role</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium">Joined</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
+              <th className="px-4 py-3 font-medium">User</th>
+              <th className="px-4 py-3 font-medium">Contact</th>
+              <th className="px-4 py-3 font-medium">Role</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Joined</th>
+              <th className="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -148,34 +148,34 @@ export function UserTable() {
             ) : (
               users.map((user: any, index: number) => (
                 <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <img 
                         src={user.avatarUrl || "https://placehold.co/100x100/png"} 
                         alt="" 
-                        className="h-10 w-10 rounded-full object-cover border border-zinc-200"
+                        className="h-10 w-10 rounded-full object-cover border border-zinc-200 shrink-0"
                       />
-                      <div>
-                        <div className="font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                          {user.fullName || "Unnamed User"}
-                          {user.isEmailVerified && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2 truncate" title={user.fullName || "Unnamed User"}>
+                          <span className="truncate">{user.fullName || "Unnamed User"}</span>
+                          {user.isEmailVerified && <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />}
                         </div>
-                        <div className="text-xs text-zinc-500">ID: {user.id.slice(0, 8)}...</div>
+                        <div className="text-xs text-zinc-500 truncate" title={user.id}>ID: {user.id.slice(0, 8)}...</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-zinc-900 dark:text-zinc-100">{user.email}</div>
-                    <div className="text-xs text-zinc-500">{user.phone}</div>
+                  <td className="px-4 py-3">
+                    <div className="text-zinc-900 dark:text-zinc-100 truncate max-w-[150px]" title={user.email}>{user.email}</div>
+                    <div className="text-xs text-zinc-500 truncate max-w-[150px]" title={user.phone}>{user.phone}</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
                       user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                     }`}>
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
                       user.status === 'active' ? 'bg-green-100 text-green-800' : 
                       user.status === 'suspended' ? 'bg-red-100 text-red-800' : 
@@ -184,10 +184,10 @@ export function UserTable() {
                       {user.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-zinc-500">
+                  <td className="px-4 py-3 text-zinc-500 whitespace-nowrap">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
-                  <td className={`px-6 py-4 text-right relative ${activeMenu === user.id ? 'z-50' : 'z-10'}`}>
+                  <td className={`px-4 py-3 text-right relative whitespace-nowrap ${activeMenu === user.id ? 'z-50' : 'z-10'}`}>
                     <div className="flex items-center justify-end gap-2">
                       <Link 
                         href={`/details-user/${user.id}`} 
@@ -219,15 +219,7 @@ export function UserTable() {
                             </button>
                           )}
                           
-                          {user.role === 'user' ? (
-                            <button onClick={() => handleRoleChange(user.id, 'admin')} className="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-zinc-50 flex items-center gap-2">
-                              <ShieldAlert className="h-4 w-4" /> Make Admin
-                            </button>
-                          ) : (
-                            <button onClick={() => handleRoleChange(user.id, 'user')} className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-zinc-50 flex items-center gap-2">
-                              <ShieldCheck className="h-4 w-4" /> Remove Admin
-                            </button>
-                          )}
+
 
                           <div className="h-px bg-zinc-200 my-1" />
                           
@@ -257,8 +249,121 @@ export function UserTable() {
         </table>
       </div>
 
+      {/* Mobile Card View */}
+      <div className="block md:hidden flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50 dark:bg-zinc-950/50">
+        {isLoading || isFetching ? (
+          <div className="py-12 text-center text-zinc-500">
+            <div className="animate-pulse flex flex-col items-center gap-2">
+              <div className="h-6 w-6 border-2 border-[#6b8f84] border-t-transparent rounded-full animate-spin" />
+              Loading users...
+            </div>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="py-12 text-center text-zinc-500">
+            No users found matching your filters.
+          </div>
+        ) : (
+          users.map((user: any, index: number) => (
+            <div key={user.id} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm relative">
+              <div className="flex items-start justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800/50 pb-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={user.avatarUrl || "https://placehold.co/100x100/png"} 
+                    alt="" 
+                    className="h-11 w-11 rounded-full object-cover border border-zinc-200 shrink-0"
+                  />
+                  <div>
+                    <div className="font-medium text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 truncate max-w-[160px]">
+                      {user.fullName || "Unnamed User"}
+                      {user.isEmailVerified && <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />}
+                    </div>
+                    <div className="text-[11px] text-zinc-500 truncate max-w-[160px]">{user.email}</div>
+                  </div>
+                </div>
+                
+                <div className="relative">
+                  <button 
+                    onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)} 
+                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-600"
+                  >
+                    <MoreVertical className="h-5 w-5" />
+                  </button>
+
+                  {/* Action Dropdown Menu */}
+                  {activeMenu === user.id && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                      <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden py-1">
+                        {user.status === 'active' ? (
+                          <button onClick={() => handleStatusChange(user.id, 'suspended')} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-zinc-50 flex items-center gap-2">
+                            <UserX className="h-4 w-4" /> Suspend
+                          </button>
+                        ) : (
+                          <button onClick={() => handleStatusChange(user.id, 'active')} className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-zinc-50 flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4" /> Activate
+                          </button>
+                        )}
+                        
+
+
+                        <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                        
+                        <button 
+                          onClick={() => {
+                            setActiveMenu(null);
+                            setAssignMembershipUser(user);
+                          }} 
+                          className="w-full text-left px-4 py-2 text-sm text-[#6b8f84] hover:bg-[#6b8f84]/10 flex items-center gap-2 font-medium"
+                        >
+                          <Gift className="h-4 w-4" /> Assign Membership
+                        </button>
+                        
+                        <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                        
+                        <button onClick={() => handleDelete(user.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium">
+                          <Trash2 className="h-4 w-4" /> Delete Account
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Role</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold capitalize ${
+                    user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {user.role}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Status</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold capitalize ${
+                    user.status === 'active' ? 'bg-green-100 text-green-800' : 
+                    user.status === 'suspended' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {user.status.replace('_', ' ')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Joined</span>
+                  <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">{new Date(user.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-end pb-0.5">
+                  <Link href={`/details-user/${user.id}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-lg transition-colors">
+                    <Eye className="h-3.5 w-3.5" /> View Details
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Pagination */}
-      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50">
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
         <span className="text-sm text-zinc-500">
           Showing page {page} of {totalPages}
         </span>

@@ -181,8 +181,8 @@ export default function ListingsManagementPage() {
           </div>
         </div>
 
-        {/* Table Content */}
-        <div className="flex-1 overflow-x-auto scrollbar-none">
+        {/* Desktop Table Content */}
+        <div className="hidden md:block flex-1 overflow-x-auto scrollbar-none">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-zinc-50 dark:bg-zinc-900/80 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
               <tr>
@@ -213,8 +213,8 @@ export default function ListingsManagementPage() {
                 listings.map((listing: any) => (
                   <tr key={listing.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                     {/* Title & Preview Image */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="px-6 py-4 max-w-sm">
+                      <div className="flex items-center gap-3 w-full">
                         <div className="h-10 w-10 relative rounded-lg bg-zinc-100 dark:bg-zinc-850 overflow-hidden flex-shrink-0 border border-zinc-200/50">
                           {listing.images && listing.images[0] ? (
                             <img
@@ -228,7 +228,7 @@ export default function ListingsManagementPage() {
                             </div>
                           )}
                         </div>
-                        <div className="max-w-[calc(100%-3rem)]">
+                        <div className="flex-1 min-w-0">
                           <div className="font-semibold text-zinc-950 dark:text-zinc-50 truncate">
                             {listing.title}
                           </div>
@@ -333,30 +333,178 @@ export default function ListingsManagementPage() {
           </table>
         </div>
 
+        {/* Mobile Card View */}
+        <div className="block md:hidden flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50 dark:bg-zinc-950/50">
+          {isLoading || isFetching ? (
+            <div className="py-12 text-center text-zinc-500">
+              <div className="animate-pulse flex flex-col items-center gap-2">
+                <div className="h-6 w-6 border-2 border-[#6b8f84] border-t-transparent rounded-full animate-spin" />
+                Loading listings...
+              </div>
+            </div>
+          ) : listings.length === 0 ? (
+            <div className="py-12 text-center text-zinc-500">
+              No listings found matching your criteria.
+            </div>
+          ) : (
+            listings.map((listing: any) => (
+              <div key={listing.id} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm relative">
+                {/* Title & Preview Image */}
+                <div className="flex items-start gap-3 w-full border-b border-zinc-100 dark:border-zinc-800/50 pb-3 mb-3">
+                  <div className="h-12 w-12 relative rounded-lg bg-zinc-100 dark:bg-zinc-850 overflow-hidden flex-shrink-0 border border-zinc-200/50">
+                    {listing.images && listing.images[0] ? (
+                      <img
+                        src={listing.images[0]}
+                        alt={listing.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-zinc-400">
+                        <Tag className="h-5 w-5" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm text-zinc-950 dark:text-zinc-50 truncate">
+                      {listing.title}
+                    </div>
+                    <div className="text-[11px] text-zinc-500 truncate mt-0.5 max-w-[200px]">
+                      {listing.description}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 items-center mt-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+                        {listing.category}
+                      </span>
+                      {listing.isFeatured && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-[10px] font-bold border border-yellow-200 dark:border-yellow-500/25">
+                          <Sparkles className="h-2.5 w-2.5" /> Featured
+                        </span>
+                      )}
+                      {(listing.activeBoost || listing.isBoosted) && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold border border-indigo-200 dark:border-indigo-500/25">
+                          Boosted
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {/* Owner */}
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Owner</span>
+                    <div className="flex items-center gap-2">
+                      {listing.user?.avatarUrl ? (
+                        <img
+                          src={listing.user.avatarUrl}
+                          alt={listing.user.fullName || "User"}
+                          className="h-5 w-5 rounded-full object-cover border border-zinc-200"
+                        />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500">
+                          <User className="h-3 w-3" />
+                        </div>
+                      )}
+                      <div className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold truncate max-w-[100px]">
+                        {listing.user?.fullName || "Unknown"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Status</span>
+                    {renderStatusBadge(listing.status)}
+                  </div>
+                </div>
+
+                {/* Actions & Date */}
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/50">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {new Date(listing.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/listings-management/${listing.id}`}
+                      className="p-1.5 text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
+                      title="View Details"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setStatusChangeListing(listing);
+                        setNewStatus(listing.status);
+                      }}
+                      className="p-1.5 text-[#6b8f84] hover:bg-[#6b8f84]/10 rounded-lg transition-colors"
+                      title="Change Status"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteListing(listing.id)}
+                      className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Delete Listing"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              Showing page {page} of {totalPages} ({totalListings} total listings)
-            </div>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            Showing page <span className="font-semibold text-zinc-900 dark:text-zinc-100">{page}</span> of <span className="font-semibold text-zinc-900 dark:text-zinc-100">{totalPages || 1}</span> ({totalListings || 0} total listings)
           </div>
-        )}
+          <div className="flex gap-2">
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-lg disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            
+            {/* Page Numbers */}
+            <div className="hidden sm:flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages || 1) }, (_, i) => {
+                // Logic to show pages around current page
+                let pageNum = i + 1;
+                if ((totalPages || 1) > 5 && page > 3) {
+                  pageNum = page - 3 + i + (page + 1 >= (totalPages || 1) ? -1 : 0);
+                  pageNum = Math.min(pageNum, (totalPages || 1) - 4 + i);
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className={`h-8 w-8 text-xs font-semibold rounded-lg transition-colors ${
+                      page === pageNum
+                        ? "bg-[#6b8f84] text-white"
+                        : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              disabled={page >= (totalPages || 1)}
+              onClick={() => setPage(p => Math.min(totalPages || 1, p + 1))}
+              className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-lg disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
 

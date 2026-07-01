@@ -11,6 +11,7 @@ import { supportApi } from "./api/supportApi";
 import { listingApi } from "./api/listingApi";
 import { notificationApi } from "./api/notificationApi";
 import { paymentApi } from "./api/paymentApi";
+import { waitlistApi } from "./api/waitlistApi";
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
     [listingApi.reducerPath]: listingApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
+    [waitlistApi.reducerPath]: waitlistApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -40,7 +42,8 @@ export const store = configureStore({
       supportApi.middleware,
       listingApi.middleware,
       notificationApi.middleware,
-      paymentApi.middleware
+      paymentApi.middleware,
+      waitlistApi.middleware,
     ),
 });
 

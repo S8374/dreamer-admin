@@ -132,18 +132,18 @@ export default function SupportTicketsPage() {
           </div>
         </div>
 
-        {/* Table Content */}
-        <div className="flex-1 overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+        {/* Desktop Table Content */}
+        <div className="hidden md:block flex-1 overflow-x-auto">
+          <table className="w-full text-left text-sm">
             <thead className="bg-zinc-50 dark:bg-zinc-900/80 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
               <tr>
-                <th className="px-6 py-4 font-medium">Submitter Name</th>
-                <th className="px-6 py-4 font-medium">Subject</th>
-                <th className="px-6 py-4 font-medium">Issue Type</th>
-                <th className="px-6 py-4 font-medium">Priority</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Submitted</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <th className="px-4 py-3 font-medium">Submitter Name</th>
+                <th className="px-4 py-3 font-medium">Subject</th>
+                <th className="px-4 py-3 font-medium">Issue Type</th>
+                <th className="px-4 py-3 font-medium">Priority</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Submitted</th>
+                <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -166,24 +166,24 @@ export default function SupportTicketsPage() {
                 filteredTickets.map((ticket: any) => (
                   <tr key={ticket.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                     {/* Submitter Info */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={ticket.user?.avatarUrl || "https://placehold.co/100x100/png"}
                           alt=""
-                          className="h-10 w-10 rounded-full object-cover border border-zinc-200"
+                          className="h-10 w-10 rounded-full object-cover border border-zinc-200 shrink-0"
                         />
-                        <div>
-                          <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100 truncate" title={ticket.name || ticket.user?.fullName || "Guest Submitter"}>
                             {ticket.name || ticket.user?.fullName || "Guest Submitter"}
                           </div>
-                          <div className="text-xs text-zinc-500">{ticket.user?.email || "No account email"}</div>
+                          <div className="text-xs text-zinc-500 truncate max-w-[150px]" title={ticket.user?.email || "No account email"}>{ticket.user?.email || "No account email"}</div>
                         </div>
                       </div>
                     </td>
 
                     {/* Subject */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="font-medium text-zinc-900 dark:text-zinc-100 max-w-[220px] truncate">
                         {ticket.subject}
                       </div>
@@ -191,12 +191,12 @@ export default function SupportTicketsPage() {
                     </td>
 
                     {/* Issue Type */}
-                    <td className="px-6 py-4 capitalize text-zinc-700 dark:text-zinc-300">
+                    <td className="px-4 py-3 capitalize text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                       {ticket.issueType.replace("_", " ")}
                     </td>
 
                     {/* Priority */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {ticket.isPriority ? (
                         <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded-md border border-red-150">
                           <ShieldAlert className="h-3.5 w-3.5" /> Priority
@@ -207,7 +207,7 @@ export default function SupportTicketsPage() {
                     </td>
 
                     {/* Status Badge */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
                         ticket.status === "open" ? "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400" :
                         ticket.status === "in_progress" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
@@ -218,12 +218,12 @@ export default function SupportTicketsPage() {
                     </td>
 
                     {/* Date */}
-                    <td className="px-6 py-4 text-zinc-500">
+                    <td className="px-4 py-3 text-zinc-500 whitespace-nowrap">
                       {new Date(ticket.createdAt).toLocaleDateString()}
                     </td>
 
                     {/* Actions */}
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
                       <Link
                         href={`/support-management/${ticket.id}`}
                         className="px-3 py-1.5 bg-[#6b8f84]/10 text-[#6b8f84] hover:bg-[#6b8f84]/20 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold ml-auto w-fit"
@@ -236,6 +236,96 @@ export default function SupportTicketsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="block md:hidden flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50 dark:bg-zinc-950/50">
+          {isLoading || isFetching ? (
+            <div className="py-12 text-center text-zinc-500">
+              <div className="animate-pulse flex flex-col items-center gap-2">
+                <div className="h-6 w-6 border-2 border-[#6b8f84] border-t-transparent rounded-full animate-spin" />
+                Loading support tickets...
+              </div>
+            </div>
+          ) : filteredTickets.length === 0 ? (
+            <div className="py-12 text-center text-zinc-500">
+              No support tickets found.
+            </div>
+          ) : (
+            filteredTickets.map((ticket: any) => (
+              <div key={ticket.id} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm relative">
+                <div className="flex justify-between items-start mb-3 border-b border-zinc-100 dark:border-zinc-800/50 pb-3">
+                  <div className="flex items-center gap-3 pr-4 w-full min-w-0">
+                    <img
+                      src={ticket.user?.avatarUrl || "https://placehold.co/100x100/png"}
+                      alt=""
+                      className="h-10 w-10 rounded-full object-cover border border-zinc-200 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate">
+                        {ticket.name || ticket.user?.fullName || "Guest Submitter"}
+                      </div>
+                      <div className="text-xs text-zinc-500 truncate mt-0.5">
+                        {ticket.user?.email || "No account email"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <div className="font-medium text-zinc-900 dark:text-zinc-100 text-sm line-clamp-2">
+                    {ticket.subject}
+                  </div>
+                  <div className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                    {ticket.message}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Status</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium capitalize ${
+                      ticket.status === "open" ? "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400" :
+                      ticket.status === "in_progress" ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
+                      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    }`}>
+                      {ticket.status.replace("_", " ")}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Issue Type</span>
+                    <span className="capitalize text-zinc-700 dark:text-zinc-300 text-xs font-medium">
+                      {ticket.issueType.replace("_", " ")}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Priority</span>
+                    {ticket.isPriority ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded-md border border-red-150">
+                        <ShieldAlert className="h-3 w-3" /> Priority
+                      </span>
+                    ) : (
+                      <span className="text-xs text-zinc-400">Normal</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/50">
+                  <div className="text-xs text-zinc-500">
+                    {new Date(ticket.createdAt).toLocaleDateString()}
+                  </div>
+                  <Link
+                    href={`/support-management/${ticket.id}`}
+                    className="px-3 py-1.5 bg-[#6b8f84]/10 text-[#6b8f84] hover:bg-[#6b8f84]/20 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold"
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Review
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

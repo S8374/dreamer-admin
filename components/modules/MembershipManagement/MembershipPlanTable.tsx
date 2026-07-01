@@ -81,8 +81,8 @@ export function MembershipPlanTable() {
         </button>
       </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden md:block flex-1 overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-zinc-50 dark:bg-zinc-900/80 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
             <tr>
@@ -181,8 +181,99 @@ export function MembershipPlanTable() {
         </table>
       </div>
 
+      {/* Mobile Card View */}
+      <div className="block md:hidden flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50 dark:bg-zinc-950/50">
+        {isLoading || isFetching ? (
+          <div className="py-12 text-center text-zinc-500">
+            <div className="animate-pulse flex flex-col items-center gap-2">
+              <div className="h-6 w-6 border-2 border-[#6b8f84] border-t-transparent rounded-full animate-spin" />
+              Loading plans...
+            </div>
+          </div>
+        ) : filteredPlans.length === 0 ? (
+          <div className="py-12 text-center text-zinc-500">
+            No membership plans found.
+          </div>
+        ) : (
+          filteredPlans.map((plan: any, index: number) => (
+            <div key={plan.id} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm relative">
+              <div className="flex justify-between items-start mb-3 border-b border-zinc-100 dark:border-zinc-800/50 pb-3">
+                <div className="pr-8">
+                  <div className="font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2 flex-wrap">
+                    {plan.name}
+                    {plan.isPopular && <span className="bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded uppercase font-bold">Popular</span>}
+                  </div>
+                  <div className="text-xs text-zinc-500 mt-0.5">{plan.code}</div>
+                </div>
+                
+                <div className="absolute right-3 top-3">
+                  <button 
+                    onClick={() => setActiveMenu(activeMenu === plan.id ? null : plan.id)}
+                    className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-zinc-500"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
+
+                  {activeMenu === plan.id && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
+                      <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden py-1">
+                        <button 
+                          onClick={() => router.push(`/memberships-management/${plan.id}`)} 
+                          className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 font-medium"
+                        >
+                          <List className="h-4 w-4" /> Manage Features
+                        </button>
+                        
+                        <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+
+                        <button onClick={() => handleEdit(plan)} className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2">
+                          <Edit2 className="h-4 w-4" /> Edit Plan
+                        </button>
+                        
+                        <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                        
+                        <button onClick={() => handleDelete(plan.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2">
+                          <Trash2 className="h-4 w-4" /> Delete Plan
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Tier</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
+                    plan.tier === 'GOLD' ? 'bg-yellow-100 text-yellow-800' :
+                    plan.tier === 'PLATINUM' ? 'bg-indigo-100 text-indigo-800' :
+                    plan.tier === 'SILVER' ? 'bg-zinc-100 text-zinc-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {plan.tier}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Status</span>
+                  <span className="flex items-center gap-1.5 text-xs">
+                    {plan.isActive ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <XCircle className="h-3.5 w-3.5 text-red-500" />}
+                    <span className={plan.isActive ? "text-green-700 font-medium" : "text-red-700 font-medium"}>{plan.isActive ? "Active" : "Inactive"}</span>
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium block mb-1">Pricing</span>
+                  <div className="text-zinc-900 dark:text-zinc-100 font-medium text-xs">${plan.monthlyPrice}/mo</div>
+                  {plan.yearlyPrice && <div className="text-[10px] text-zinc-500">${plan.yearlyPrice}/yr</div>}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Pagination */}
-      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50">
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
         <span className="text-sm text-zinc-500">
           Showing page {page} of {totalPages}
         </span>

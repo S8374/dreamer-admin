@@ -1,9 +1,10 @@
 "use client";
 
-import { Menu, Bell, User, ChevronDown, LogOut } from "lucide-react";
-import { useState } from "react";
+import { Menu, Bell, User, ChevronDown, LogOut, Sun, Moon } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
+import { useTheme } from "next-themes";
 
 import { useAdminLogoutMutation } from "@/lib/redux/api/authApi";
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from "@/lib/redux/api/notificationApi";
@@ -17,6 +18,11 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [adminLogout] = useAdminLogoutMutation();
+
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const { data: notificationsRes } = useGetNotificationsQuery();
   const [markAsRead] = useMarkNotificationAsReadMutation();
@@ -61,6 +67,17 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       <div className="flex flex-1 justify-end items-center gap-4 sm:gap-6">
         
+        {/* Theme Toggle */}
+        {mounted && (
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="p-2 text-zinc-400 hover:text-zinc-600 transition-colors dark:hover:text-zinc-300"
+            title="Toggle Theme"
+          >
+            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+        )}
+
         {/* Notifications */}
         <div className="relative">
           <button 
@@ -77,7 +94,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-800 dark:bg-zinc-900 z-50">
+            <div className="absolute -right-12 sm:right-0 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-800 dark:bg-zinc-900 z-50">
               <div className="flex items-center justify-between border-b border-zinc-150 dark:border-zinc-800 pb-2 px-3 mb-2">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-150">Notifications</span>
                 {unreadCount > 0 && <span className="text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-500/10 px-2 py-0.5 rounded-full">{unreadCount} unread</span>}

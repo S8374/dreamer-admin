@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Lock, Mail, KeyRound } from "lucide-react";
 import { useAdminLoginMutation, useVerifyOtpMutation } from "../lib/redux/api/authApi";
+import { useGetUserStatsQuery } from "../lib/redux/api/userApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -13,6 +14,14 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   
   const [viewState, setViewState] = useState<"login" | "otp">("login");
+
+  // Check if user is already logged in
+  const { data: userStats, isSuccess } = useGetUserStatsQuery();
+
+  // If already logged in, redirect to dashboard
+  if (isSuccess && userStats) {
+    router.push("/dashboard");
+  }
 
   const [adminLogin, { isLoading: isLoggingIn }] = useAdminLoginMutation();
   const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();

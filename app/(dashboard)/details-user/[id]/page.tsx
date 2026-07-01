@@ -547,36 +547,70 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                 <h3 className="text-base font-bold text-zinc-900 dark:text-white">Promotion History (Boosts)</h3>
               </div>
               {user.promotionPurchases && user.promotionPurchases.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
-                      <tr>
-                        <th className="px-6 py-4">Listing</th>
-                        <th className="px-6 py-4">Package</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Started At</th>
-                        <th className="px-6 py-4">Ends At</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                      {user.promotionPurchases.map((promo: any) => (
-                        <tr key={promo.id} className="hover:bg-zinc-50/50 transition-colors">
-                          <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">{promo.listing?.title || "Unknown Listing"}</td>
-                          <td className="px-6 py-4 font-medium text-zinc-650 dark:text-zinc-350">{promo.promotionPackage?.name || "Unknown Package"}</td>
-                          <td className="px-6 py-4 capitalize">
-                            <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
-                              promo.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-zinc-100 text-zinc-800 border border-zinc-200'
-                            }`}>
-                              {promo.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-zinc-500">{new Date(promo.startsAt).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 text-zinc-500">{new Date(promo.endsAt).toLocaleDateString()}</td>
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                        <tr>
+                          <th className="px-6 py-4">Listing</th>
+                          <th className="px-6 py-4">Package</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4">Started At</th>
+                          <th className="px-6 py-4">Ends At</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                        {user.promotionPurchases.map((promo: any) => (
+                          <tr key={promo.id} className="hover:bg-zinc-50/50 transition-colors">
+                            <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">{promo.listing?.title || "Unknown Listing"}</td>
+                            <td className="px-6 py-4 font-medium text-zinc-650 dark:text-zinc-350">{promo.promotionPackage?.name || "Unknown Package"}</td>
+                            <td className="px-6 py-4 capitalize">
+                              <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                                promo.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-zinc-100 text-zinc-800 border border-zinc-200'
+                              }`}>
+                                {promo.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-zinc-500">{new Date(promo.startsAt).toLocaleDateString()}</td>
+                            <td className="px-6 py-4 text-zinc-500">{new Date(promo.endsAt).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="block md:hidden flex-1 p-4 space-y-4 bg-zinc-50 dark:bg-zinc-950/50">
+                    {user.promotionPurchases.map((promo: any) => (
+                      <div key={promo.id} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm relative space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="font-semibold text-zinc-900 dark:text-zinc-100">{promo.listing?.title || "Unknown Listing"}</div>
+                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] capitalize shrink-0 ${
+                            promo.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-zinc-100 text-zinc-800 border border-zinc-200'
+                          }`}>
+                            {promo.status}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-zinc-500 block mb-0.5">Package</span>
+                            <span className="text-zinc-900 dark:text-zinc-300 font-medium">{promo.promotionPackage?.name || "Unknown Package"}</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 block mb-0.5">Started At</span>
+                            <span className="text-zinc-900 dark:text-zinc-300">{new Date(promo.startsAt).toLocaleDateString()}</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 block mb-0.5">Ends At</span>
+                            <span className="text-zinc-900 dark:text-zinc-300">{new Date(promo.endsAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="p-6">
                   <p className="text-zinc-550">No promotion purchases found.</p>

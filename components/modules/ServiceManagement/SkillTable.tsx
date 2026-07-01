@@ -210,7 +210,7 @@ export function SkillTable({ serviceId }: { serviceId: string }) {
       </div>
 
       {/* Pagination */}
-      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50">
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
         <span className="text-sm text-zinc-500">
           Showing page {page} of {totalPages}
         </span>

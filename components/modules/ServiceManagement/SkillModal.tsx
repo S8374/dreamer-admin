@@ -94,9 +94,9 @@ export function SkillModal({ isOpen, onClose, skill, serviceId, nextSortOrder }:
         </div>
 
         <form onSubmit={handleSubmit} className="overflow-y-auto space-y-4 pr-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Skill Name (EN) *</label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Skill Name *</label>
               <input
                 type="text"
                 required
@@ -104,16 +104,6 @@ export function SkillModal({ isOpen, onClose, skill, serviceId, nextSortOrder }:
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
                 placeholder="e.g. 3D Logo Design"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Skill Name (ES)</label>
-              <input
-                type="text"
-                value={nameEs}
-                onChange={(e) => setNameEs(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
-                placeholder="e.g. Diseño de Logo 3D"
               />
             </div>
           </div>

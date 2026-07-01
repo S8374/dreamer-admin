@@ -183,15 +183,6 @@ export function MembershipPlanModal({ isOpen, onClose, plan }: MembershipPlanMod
                 className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">RevenueCat Product ID</label>
-              <input
-                type="text"
-                value={formData.revenueCatProductId}
-                onChange={(e) => setFormData({ ...formData, revenueCatProductId: e.target.value })}
-                className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6b8f84]"
-              />
-            </div>
           </div>
 
           <div className="col-span-1 md:col-span-2">

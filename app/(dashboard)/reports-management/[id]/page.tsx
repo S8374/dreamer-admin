@@ -224,11 +224,11 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
                   alt=""
                   className="h-12 w-12 rounded-full object-cover border border-zinc-200 shrink-0"
                 />
-                <div className="space-y-1">
-                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 leading-none">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 leading-none truncate" title={report.reportedUser?.fullName || "Unnamed User"}>
                     {report.reportedUser?.fullName || "Unnamed User"}
                   </div>
-                  <div className="text-xs text-zinc-500">{report.reportedUser?.email}</div>
+                  <div className="text-xs text-zinc-500 truncate" title={report.reportedUser?.email}>{report.reportedUser?.email}</div>
                   <div className="flex gap-2.5 items-center mt-1">
                     <span className="text-[10px] px-2 py-0.5 rounded-full capitalize font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                       {report.reportedUser?.role}
@@ -260,11 +260,11 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
                   alt=""
                   className="h-12 w-12 rounded-full object-cover border border-zinc-200 shrink-0"
                 />
-                <div className="space-y-1">
-                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 leading-none">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 leading-none truncate" title={report.reporter?.fullName || "Unnamed User"}>
                     {report.reporter?.fullName || "Unnamed User"}
                   </div>
-                  <div className="text-xs text-zinc-500">{report.reporter?.email}</div>
+                  <div className="text-xs text-zinc-500 truncate" title={report.reporter?.email}>{report.reporter?.email}</div>
                   <div className="flex gap-2.5 items-center mt-1">
                     <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize font-semibold ${
                       report.reporter?.status === "active" ? "bg-green-100 text-green-800 dark:bg-green-900/30" : "bg-red-100 text-red-800"
